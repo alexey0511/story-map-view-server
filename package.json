@@ -1,0 +1,16 @@
+{
+  "name": "story-map-view-server",
+  "version": "1.0.0",
+  "description": "Proxy server for Catalyst Story Map application.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "express": "^4.15.4",
+    "nodemon": "^1.12.1",
+    "request": "^2.82.0"
+  }
+}
