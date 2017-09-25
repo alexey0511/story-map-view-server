@@ -1,37 +1,37 @@
 const express = require('express');
-const request = require('request');
+const session = require('express-session')
+const bodyParser = require('body-parser')
 
-var app = express();
-app.use('/', function(req, res) {
-  let apiServerHost;
-  const service = req.url.split('/')[1] // passing service name as in a route
+const app = express();
+const router = express.Router()
 
-  switch(service) {
-    case 'github':
-      apiServerHost = 'https://api.github.com'
-      break;
-    case 'gitlab':
-      apiServerHost = 'https://gitlab.catalyst.net.nz'
-      break;
-    case 'redmine':
-      apiServerHost = 'https://redmine.catalyst.net.nz'
-      break;
-    default:
-      res.send(404)
-  }
+app.use(bodyParser.json())
 
-  const url = req.url.replace('/' + service, apiServerHost)
 
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+app.use(session({
+  genid: function(req) {
+    return genuuid() // use UUIDs for session IDs
+  },
+  resave: true,
+  saveUninitialized: true,
+  secret: 'the secret',
+  cookie: { secure: false }
+}))
 
-  // handle options, because e.g. redmine can't handle it
-  if (req.method === 'OPTIONS') {
-    res.send(200);
-  } else {
-    req.pipe(request(url)).pipe(res);
-  }
-});
+const genuuid = () => {
+  function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+    .toString(16)
+    .substring(1);
+}
+return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+  s4() + '-' + s4() + s4() + s4();
+}
+
+app.set('trust proxy', 1) // trust first proxy
+
+const routes = require('./routes');
+
+app.use('/', routes)
 
 app.listen(process.env.PORT || 3000);
