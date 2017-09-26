@@ -69,6 +69,11 @@ router.route('/login/:service')
 
   router.route('/is-authenticated/:service')
     .get((req, res) => {
+      res.header('Access-Control-Allow-Origin', 'https://alexey0511.github.io');
+      res.header('Access-Control-Allow-Credentials', 'true')
+      res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+
     switch(req.params.service){
       case 'gitlab-external':
         if (req.session.gitlab_token) {
