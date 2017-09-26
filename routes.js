@@ -30,31 +30,6 @@ router.use((req, res, next) => { // run for any & all requests
   }
 });
 
-router.route('/login1')
-  .get((req, res) => {
-
-  // -----------------------------------------------------------------------
-  // authentication
-
-  const auth = {login: 'yourlogin', password: 'yourpassword'} // change this
-
-  const b64auth = (req.headers.authorization || '').split(' ')[1] || ''
-  const [login, password] = new Buffer(b64auth, 'base64').toString().split(':')
-
-  // Verify login and password are set and correct
-  if (!login || !password || login !== auth.login || password !== auth.password) {
-    res.set('WWW-Authenticate', 'Basic realm="nope"') // change this
-    res.status(401).send('You shall not pass.') // custom message
-    return
-  }
-
-  // -----------------------------------------------------------------------
-  // Access granted...
-
-  // code here
-
-})
-
 router.route('/login/:service')
   .post((req, res) => {
     switch(req.params.service) {
@@ -161,7 +136,7 @@ router.route('/login/:service')
             })))
           })
           .catch(e => {
-            handleErrors(e, req.params.service, res)
+            handleErrors(e, req.params.service, req,  res)
           })
           break;
         case 'github':
@@ -216,8 +191,8 @@ router.route('/login/:service')
                       user: i.author.name,
                       id: i.id
                     })),
-              categories: data[1].reverse(),
-              milestones: data[2].reverse()
+              steps: data[1].reverse(),
+              releases: data[2].reverse()
             })
           })
           .catch(e => {
@@ -236,29 +211,29 @@ router.route('/login/:service')
           })
           .then(data => {
               let issues = data.issues
-              let categories = issues.filter(i => !!i.category).map(i => ({name: i.category.name, id: i.category.id}))
+              let steps = issues.filter(i => !!i.category).map(i => ({name: i.category.name, id: i.category.id}))
 
-              let uniqueCategories = Object.values(categories.reduce((hash, obj) => {
+              let uniquesteps = Object.values(steps.reduce((hash, obj) => {
                 let isExist = Object.values(hash).some(v => v.id === obj.id)
                 return !isExist ? Object.assign(hash, {[obj.id] : obj}) : hash
               }, Object.create(null)))
 
-              let milestones = issues
+              let releases = issues
                 .filter(m => !!m.release && !!m.release.release)
                 .map((i, id) => ({title: i.release.release.name, id: i.release.release.id, number: -1 * id}))
 
-              let uniqueMilestones = Object.values(milestones.reduce((hash, obj) => {
+              let uniquereleases = Object.values(releases.reduce((hash, obj) => {
                 let isExist = Object.values(hash).some(v => v.id === obj.id)
                 return !isExist ? Object.assign(hash, {[obj.id] : obj}) : hash
               }, Object.create(null)))
 
-              if (!categories.length || !milestones.length) {
-                alert("Selected Project doesn't have any categories or milestones")
+              if (!steps.length || !releases.length) {
+                alert("Selected Project doesn't have any steps or releases")
                 return false
               }
               res.json({
-                categories: uniqueCategories.reverse(),
-                milestones: uniqueMilestones,
+                steps: uniquesteps.reverse(),
+                releases: uniquereleases,
                 issues: issues.map(i => ({
                   title: i.subject,
                   milestone: !!i.release && !!i.release.release ? i.release.release.name : null,
@@ -289,8 +264,8 @@ router.route('/login/:service')
 
         Promise.all(github_promises).then(data => {
               res.json({
-                categories: data[1].reverse(),
-                milestones: data[2].reverse(),
+                steps: data[1].reverse(),
+                releases: data[2].reverse(),
                 issues: data[0].map(i => {
                   return {
                     title: i.title,
@@ -311,14 +286,14 @@ router.route('/login/:service')
       }
   })
 
-  const handleErrors = (e, service, res) => {
+  const handleErrors = (e, service, req, res) => {
     if (e.statusCode === 401) {
-      cleanSession(service)
+      cleanSession(service, req)
     }
     res.status(e.statusCode).send(e)
   }
 
-  const cleanSession = service => {
+  const cleanSession = (service, req) => {
           if (service === 'redmine') {
             req.session.redmine_auth = null
           }
