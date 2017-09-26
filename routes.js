@@ -220,26 +220,16 @@ router.route('/login/:service')
               let issues = data.issues
               let steps = issues.filter(i => !!i.category).map(i => ({name: i.category.name, id: i.category.id}))
 
-              let uniquesteps = Object.values(steps.reduce((hash, obj) => {
-                let isExist = Object.values(hash).some(v => v.id === obj.id)
-                return !isExist ? Object.assign(hash, {[obj.id] : obj}) : hash
-              }, Object.create(null)))
+              let uniquesteps = steps.filter(uniqFilterAccordingToProp('id'))
 
               let releases = issues
                 .filter(m => !!m.release && !!m.release.release)
                 .map((i, id) => ({title: i.release.release.name, id: i.release.release.id, number: -1 * id}))
 
-              let uniquereleases = Object.values(releases.reduce((hash, obj) => {
-                let isExist = Object.values(hash).some(v => v.id === obj.id)
-                return !isExist ? Object.assign(hash, {[obj.id] : obj}) : hash
-              }, Object.create(null)))
+              let uniquereleases = releases.filter(uniqFilterAccordingToProp('id'))
 
-              if (!steps.length || !releases.length) {
-                alert("Selected Project doesn't have any steps or releases")
-                return false
-              }
               res.json({
-                steps: uniquesteps.reverse(),
+                steps: uniquesteps,
                 releases: uniquereleases,
                 issues: issues.map(i => ({
                   title: i.subject,
@@ -313,6 +303,13 @@ router.route('/login/:service')
             req.session.github_auth = null
           }
         }
+
+  const uniqFilterAccordingToProp = function (prop) {
+      if (prop)
+          return (ele, i, arr) => arr.map(ele => ele[prop]).indexOf(ele[prop]) === i
+      else
+          return (ele, i, arr) => arr.indexOf(ele) === i
+  }
 
 
 module.exports = router;
