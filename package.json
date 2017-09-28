@@ -4,21 +4,35 @@
   "description": "Proxy server for Catalyst Story Map application.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint app.js",
+    "start": "babel-node ./src/index.js",
+    "build-server": "babel -d ./dist ./src -s",
+    "auto-start": "nodemon --exec \"npm run lint && npm start\" --ignore public"
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=7.0.0"
+  },
   "dependencies": {
+    "babel-cli": "^6.26.0",
     "body-parser": "^1.18.2",
     "connect-memcached": "^0.2.0",
     "cookie-parser": "^1.4.3",
     "csurf": "^1.9.0",
     "express": "^4.15.4",
     "express-session": "^1.15.5",
+    "path": "^0.12.7",
     "request": "^2.82.0",
     "request-promise": "^4.2.2"
   },
   "devDependencies": {
-    "nodemon": "^1.12.1"
+    "babel-eslint": "^8.0.1",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "eslint": "^4.7.2",
+    "nodemon": "^1.12.1",
+    "webpack": "^3.6.0",
+    "webpack-dev-middleware": "^1.12.0"
   }
 }
