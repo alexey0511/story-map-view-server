@@ -6,9 +6,12 @@
 *
 */
 
+// Required in order to use 'import'
+import 'babel-polyfill'
+
 import express from  'express'
 import requestPromise from 'request-promise'
-import { asyncMiddleware } from './utils'
+import { asyncMiddleware, uniqFilterAccordingToProp } from './utils'
 
 const SERVICES = {
   GITHUB: 'https://api.github.com',
@@ -31,7 +34,6 @@ router.use(asyncMiddleware(async (req, res, next) => { // run for any & all requ
     next();
   }
 }));
-
 router.route('/login/github')
   .post(asyncMiddleware(async (req, res, next) => {
     //TODO: call redmine for auth

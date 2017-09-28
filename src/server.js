@@ -1,8 +1,8 @@
 import express from 'express';
 import session from'express-session';
 import bodyParser from 'body-parser';
+import path from 'path';
 import routes from './routes'
-import path from 'path'
 const app = express();
 
 app.use(bodyParser.json())
@@ -32,7 +32,7 @@ app.set('trust proxy', 1) // trust first proxy
 
 
 app.use('/', routes)
-
-app.use(express.static(path.join(__dirname, 'public')));
+// TODO: client path should be handled by nginx rather than express ....
+app.use(express.static(path.join(__dirname, './client')));
 
 app.listen(process.env.PORT || 3000);
