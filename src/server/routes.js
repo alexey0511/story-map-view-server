@@ -21,11 +21,12 @@ const SERVICES = {
 
 const router = express.Router()
 
+
 router.use(asyncMiddleware(async (req, res, next) => { // run for any & all requests
-  res.header('Access-Control-Allow-Origin', 'https://alexey0511.github.io');
-  res.header('Access-Control-Allow-Credentials', 'true')
-  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+  // res.header('Access-Control-Allow-Origin', 'https://alexey0511.github.io');
+  // res.header('Access-Control-Allow-Credentials', 'true')
+  // res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+  // res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
 
   // handle options, because e.g. redmine can't handle it
   if (req.method === 'OPTIONS') {
