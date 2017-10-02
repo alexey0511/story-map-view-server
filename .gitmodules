@@ -1,0 +1,3 @@
+[submodule "story-map-view"]
+	path = story-map-view
+	url = https://github.com/alexey0511/story-map-view.git

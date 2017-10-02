@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint app.js",
+    "build:server": "NODE_ENV='production' && rm -rf ./dist && webpack -p --config webpack.server.config.js",
+    "build:client": "rm -rf ./story-map-view/dist && cd story-map-view && ../node_modules/.bin/webpack -p --config ./webpack.config.js && cd ..",
+    "build": "npm run build:server && npm run build:client && cp -a ./story-map-view/dist ./dist/client/",
+    "deploy": "git subtree push --prefix dist origin prod",
     "start": "npm run dev",
     "start-server": "babel-node ./src/server/index.js",
-    "build:server": "webpack -p --config webpack.server.config.js",
-    "build:client": "webpack -p --config webpack.client.config.js",
-    "build": "npm run build:server && npm run build:client",
-    "deploy": "git subtree push --prefix dist origin prod",
     "dev": "nodemon --exec \"npm run lint && npm run start-server\" --ignore src/client"
   },
   "author": "",

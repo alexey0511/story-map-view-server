@@ -21,26 +21,12 @@ const SERVICES = {
 
 const router = express.Router()
 
-
-router.use(asyncMiddleware(async (req, res, next) => { // run for any & all requests
-  // res.header('Access-Control-Allow-Origin', 'https://alexey0511.github.io');
-  // res.header('Access-Control-Allow-Credentials', 'true')
-  // res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
-  // res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-
-  // handle options, because e.g. redmine can't handle it
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-}));
 router.route('/login/github')
   .post(asyncMiddleware(async (req, res, next) => {
     //TODO: call redmine for auth
     let github_creds = new Buffer(`${req.body.username}:${req.body.password}`).toString('base64')
     req.session.github_auth = `Basic ${github_creds}`
-    res.sendStatus(200);
+    res.send(true)
 }))
 
 router.route('/login/gitlab-external')
@@ -51,7 +37,7 @@ router.route('/login/gitlab-external')
                 formData: { username: req.body.username, password: req.body.password, grant_type: "password" }
               })
     req.session.gitlab_token = `${JSON.parse(data).access_token}`
-    res.sendStatus(200);
+    res.send(true)
 
 }))
 
@@ -60,7 +46,7 @@ router.route('/login/redmine')
     //TODO: call redmine for auth
     let creds = new Buffer(`${req.body.username}:${req.body.password}`).toString('base64')
     req.session.redmine_auth = `Basic ${creds}`
-    res.sendStatus(200);
+    res.send(true)
 
 }))
 
@@ -94,13 +80,21 @@ router.route('/login/redmine')
     }
   }))
 
-  router.route('/logout')
-    .get((req, res) => {
-    req.session.auth = null
-
-    req.session.isLoggedIn = false
-    res.sendStatus(200);
-  })
+router.route('/logout/github')
+  .get(asyncMiddleware(async (req, res, next) => {
+    req.session.github_auth = null
+    res.send(true)
+}))
+router.route('/logout/gitlab-external')
+  .get(asyncMiddleware(async (req, res, next) => {
+    req.session.gitlab_token = null
+    res.send(true)
+}))
+router.route('/logout/redmine')
+  .get(asyncMiddleware(async (req, res, next) => {
+    req.session.redmine_auth = null
+    res.send(true)
+}))
 
 router.route('/projects/github')
   .get(asyncMiddleware(async (req, res, next) => {
@@ -120,12 +114,10 @@ router.route('/projects/github')
 router.route('/projects/gitlab-external')
   .get(asyncMiddleware(async (req, res, next) => {
     // TODO ensure token is not expired and if it is, refresh
-
     const data = await requestPromise({
       uri: `${SERVICES.GITLAB_EXTERNAL}/api/v4/projects?access_token=${req.session.gitlab_token}`,
       json: true
     })
-
       res.setHeader('content-type', 'application/json')
       res.json(data)
 }))
@@ -194,7 +186,7 @@ router.route('/fetch-view-data/gitlab-external')
       json: true
     }));
 
-    let data = await promises
+    let data = await Promise.all(promises)
     res.setHeader('content-type', 'application/json')
     res.json({
       issues: data[0].map(i => ({
